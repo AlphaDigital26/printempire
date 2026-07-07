@@ -33,7 +33,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 observer.unobserve(entry.target);
             }
         });
-    }, { threshold: 0.15, rootMargin: '0px 0px -30px 0px' });
+    }, { threshold: 0.1, rootMargin: '0px 0px -50px 0px' });
 
     reveals.forEach(el => {
         if (!el.closest('#hero')) observer.observe(el);
@@ -96,38 +96,109 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     });
 
-    // ========== 9. MODAL ==========
+    // ========== 9. MODAL & CSRF ==========
     const modal = document.getElementById('contactModal');
     const closeBtn = document.getElementById('closeModalBtn');
-    const openModal = () => { modal.classList.add('active'); document.body.style.overflow = 'hidden'; };
-    const closeModal = () => {
-        modal.classList.remove('active'); document.body.style.overflow = '';
-        setTimeout(() => { const s = document.getElementById('formStatus'); s.className = 'form-status'; s.textContent = ''; }, 300);
+    const csrfInput = document.getElementById('csrf_token');
+    
+    const fetchCsrfToken = async () => {
+        try {
+            const res = await fetch('contact.php?action=csrf_token');
+            const data = await res.json();
+            if (data.token) csrfInput.value = data.token;
+        } catch (e) {
+            console.error("CSRF token fetch failed");
+        }
     };
+
+    const openModal = () => { 
+        modal.classList.add('active'); 
+        document.body.style.overflow = 'hidden'; 
+        fetchCsrfToken(); 
+    };
+    
+    const closeModal = () => {
+        modal.classList.remove('active'); 
+        document.body.style.overflow = '';
+        setTimeout(() => { 
+            const s = document.getElementById('formStatus'); 
+            s.className = 'form-status'; s.textContent = ''; 
+            document.querySelectorAll('.error-msg').forEach(el => el.textContent = '');
+        }, 300);
+    };
+    
     document.querySelectorAll('.open-modal-btn').forEach(b => b.addEventListener('click', e => { e.preventDefault(); openModal(); }));
     closeBtn.addEventListener('click', closeModal);
     modal.addEventListener('click', e => { if (e.target === modal) closeModal(); });
     document.addEventListener('keydown', e => { if (e.key === 'Escape' && modal.classList.contains('active')) closeModal(); });
 
-    // ========== 10. FORM ==========
+    // ========== 10. FORM VALIDATION & SUBMISSION ==========
     const form = document.getElementById('contactForm');
     const status = document.getElementById('formStatus');
     const submitBtn = document.getElementById('submitBtn');
 
+    const validateForm = () => {
+        let isValid = true;
+        document.querySelectorAll('.error-msg').forEach(el => el.textContent = '');
+
+        const name = document.getElementById('name');
+        if (!name.value.trim()) { name.nextElementSibling.textContent = 'Name is required'; isValid = false; }
+        
+        const email = document.getElementById('email');
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        if (!email.value.trim()) { 
+            email.nextElementSibling.textContent = 'Email is required'; isValid = false; 
+        } else if (!emailRegex.test(email.value.trim())) {
+            email.nextElementSibling.textContent = 'Enter a valid email address'; isValid = false;
+        }
+        
+        const phone = document.getElementById('phone');
+        if (!phone.value.trim()) { phone.nextElementSibling.textContent = 'Phone is required'; isValid = false; }
+        
+        const subject = document.getElementById('subject');
+        if (!subject.value.trim()) { subject.nextElementSibling.textContent = 'Subject is required'; isValid = false; }
+        
+        const message = document.getElementById('message');
+        if (!message.value.trim()) { message.nextElementSibling.textContent = 'Message is required'; isValid = false; }
+
+        return isValid;
+    };
+
     form.addEventListener('submit', async (e) => {
         e.preventDefault();
+        
+        if (!validateForm()) return;
+
         const orig = submitBtn.innerHTML;
         submitBtn.innerHTML = 'Sending... <i class="fa-solid fa-spinner fa-spin"></i>';
         submitBtn.disabled = true;
+        status.className = 'form-status';
+        status.textContent = '';
+        
         try {
-            const r = await fetch(form.action, { method:'POST', body:new FormData(form), headers:{'Accept':'application/json'} });
-            if (r.ok) { status.textContent = "Thanks! We'll get back to you soon."; status.className = 'form-status success'; form.reset(); }
-            else { status.textContent = 'Something went wrong.'; status.className = 'form-status error'; }
-        } catch {
-            setTimeout(() => { status.textContent = 'Demo: Message simulated!'; status.className = 'form-status success'; form.reset(); }, 600);
+            const r = await fetch(form.action, { 
+                method: 'POST', 
+                body: new FormData(form), 
+                headers: { 'Accept': 'application/json' } 
+            });
+            const result = await r.json();
+            
+            if (result.success) { 
+                status.textContent = result.message || "Thank you! Your message has been sent successfully."; 
+                status.className = 'form-status success'; 
+                form.reset(); 
+                setTimeout(closeModal, 2500);
+            } else { 
+                status.textContent = result.message || 'Something went wrong.'; 
+                status.className = 'form-status error'; 
+                fetchCsrfToken(); // Refresh token on error
+            }
+        } catch (error) {
+            status.textContent = 'Network error. Please try again later.'; 
+            status.className = 'form-status error';
         } finally {
-            submitBtn.innerHTML = orig; submitBtn.disabled = false;
-            if (status.classList.contains('success')) setTimeout(closeModal, 2500);
+            submitBtn.innerHTML = orig; 
+            submitBtn.disabled = false;
         }
     });
 });

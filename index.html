@@ -7,7 +7,7 @@
     <meta name="description" content="THE PRINT EMPIRE — Transforming textile printing paper waste into sustainable value. Surat, Gujarat, India.">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Playfair+Display:ital,wght@0,500;0,600;0,700;1,500;1,600&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=Playfair+Display:ital,wght@0,500;0,600;0,700;1,500;1,600&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="styles.css">
 </head>
@@ -38,6 +38,7 @@
 
     <!-- ===== HERO ===== -->
     <section class="hero" id="hero">
+        <div class="hero-mesh-bg"></div>
         <div class="bg-icons">
             <i class="fa-solid fa-leaf" style="--d:0s; --x:10%; --y:20%; --s:1.2;"></i>
             <i class="fa-solid fa-recycle" style="--d:2s; --x:85%; --y:35%; --s:2;"></i>
@@ -47,7 +48,7 @@
         <div class="container hero-grid">
             <div class="hero-text">
                 <span class="badge reveal-fade">♻ Paper Recycling & Sustainability</span>
-                <h1 class="reveal-text" data-split="words">Paper Today, Greener Tomorrow.</h1>
+                <h1 class="reveal-text" data-split="words">Paper Today, <span class="normal">Greener Tomorrow.</span></h1>
                 <p class="hero-desc reveal-fade" data-delay="200">We transform used sublimation transfer paper from Surat's textile printing industry into meaningful, value-added products — reducing energy waste and protecting the environment.</p>
                 <div class="hero-stats reveal-fade" data-delay="400">
                     <div class="stat">
@@ -66,7 +67,7 @@
                 </div>
             </div>
             <div class="hero-visual reveal-scale" data-delay="300">
-                <img src="images/hero.png" alt="Paper recycling warehouse">
+                <img src="images/real_recycling_hero.png" alt="Real paper recycling warehouse">
             </div>
         </div>
     </section>
@@ -141,7 +142,12 @@
             <div class="blob blob-1"></div>
             <div class="blob blob-2"></div>
         </div>
-        <div class="container" style="position:relative; z-index:2;">
+        <div class="container growth-section-grid" style="position:relative; z-index:2;">
+            <div class="growth-text reveal-fade">
+                <span class="section-label">Future Outlook</span>
+                <h2 class="reveal-text" data-split="words">Scaling Our Impact</h2>
+                <p>We are aggressively expanding our pan-India network to process exponentially more sublimation paper waste, saving thousands of trees and megawatts of energy every year.</p>
+            </div>
             <div class="growth-box reveal-fade" data-delay="100">
                 <h3><i class="fa-solid fa-arrow-trend-up"></i> Our Growth Trajectory</h3>
                 <div class="growth-row">
@@ -220,7 +226,7 @@
             <div class="footer-contact">
                 <h4>Contact</h4>
                 <a href="tel:9722333333"><i class="fa-solid fa-phone"></i> 9722-333-333</a>
-                <a href="mailto:printempire.admin@gmail.com"><i class="fa-solid fa-envelope"></i> printempire.admin@gmail.com</a>
+                <a href="mailto:jyotipal4112003@gmail.com"><i class="fa-solid fa-envelope"></i> jyotipal4112003@gmail.com</a>
             </div>
         </div>
         <div class="footer-bottom">&copy; 2026 The Print Empire. All rights reserved.</div>
@@ -232,12 +238,54 @@
             <button class="modal-close" id="closeModalBtn"><i class="fa-solid fa-xmark"></i></button>
             <h2>Get in Touch</h2>
             <p class="modal-desc">Send us a message and we'll get back to you shortly.</p>
-            <form id="contactForm" action="https://formspree.io/f/mqazqjwy" method="POST">
-                <div class="field"><label for="name">Full Name</label><input type="text" id="name" name="name" required placeholder="John Doe"></div>
-                <div class="field"><label for="email">Email</label><input type="email" id="email" name="email" required placeholder="john@example.com"></div>
-                <div class="field"><label for="message">Message</label><textarea id="message" name="message" rows="4" required placeholder="How can we collaborate?"></textarea></div>
-                <button type="submit" class="btn-submit" id="submitBtn">Send Message <i class="fa-solid fa-paper-plane"></i></button>
-                <div id="formStatus" class="form-status"></div>
+            <form id="contactForm" action="contact.php" method="POST">
+                <input type="hidden" name="csrf_token" id="csrf_token" value="">
+                
+                <!-- Honeypot -->
+                <div class="field hp-field" aria-hidden="true" style="display: none; opacity: 0; position: absolute; top: -9999px; left: -9999px; z-index: -1;">
+                    <label for="website_url">Website URL</label>
+                    <input type="text" id="website_url" name="website_url" tabindex="-1" autocomplete="off">
+                </div>
+
+                <div class="field">
+                    <label for="name">Full Name *</label>
+                    <input type="text" id="name" name="name" required placeholder="John Doe">
+                    <span class="error-msg"></span>
+                </div>
+                
+                <div class="field">
+                    <label for="company">Company Name (Optional)</label>
+                    <input type="text" id="company" name="company" placeholder="Your Company Ltd.">
+                </div>
+                
+                <div class="field">
+                    <label for="email">Email Address *</label>
+                    <input type="email" id="email" name="email" required placeholder="john@example.com">
+                    <span class="error-msg"></span>
+                </div>
+                
+                <div class="field">
+                    <label for="subject">Subject *</label>
+                    <input type="text" id="subject" name="subject" required placeholder="Inquiry about partnership">
+                    <span class="error-msg"></span>
+                </div>
+                
+                <div class="field">
+                    <label for="phone">Phone Number *</label>
+                    <input type="tel" id="phone" name="phone" required placeholder="+1 234 567 8900">
+                    <span class="error-msg"></span>
+                </div>
+                
+                <div class="field">
+                    <label for="message">Message *</label>
+                    <textarea id="message" name="message" rows="3" required placeholder="How can we collaborate?"></textarea>
+                    <span class="error-msg"></span>
+                </div>
+                
+                <div class="form-bottom">
+                    <button type="submit" class="btn-submit" id="submitBtn">Send Message <i class="fa-solid fa-paper-plane"></i></button>
+                    <div id="formStatus" class="form-status"></div>
+                </div>
             </form>
         </div>
     </div>
