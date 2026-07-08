@@ -141,7 +141,12 @@ document.addEventListener('DOMContentLoaded', () => {
         }
         
         const phone = document.getElementById('phone');
-        if (!phone.value.trim()) { phone.nextElementSibling.textContent = 'Phone is required'; isValid = false; }
+        const phoneRegex = /^\+?[\d\s\-()]{7,20}$/;
+        if (!phone.value.trim()) { 
+            phone.nextElementSibling.textContent = 'Phone is required'; isValid = false; 
+        } else if (!phoneRegex.test(phone.value.trim())) {
+            phone.nextElementSibling.textContent = 'Enter a valid phone number'; isValid = false;
+        }
         
         const subject = document.getElementById('subject');
         if (!subject.value.trim()) { subject.nextElementSibling.textContent = 'Subject is required'; isValid = false; }
