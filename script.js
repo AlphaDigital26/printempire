@@ -99,22 +99,10 @@ document.addEventListener('DOMContentLoaded', () => {
     // ========== 9. MODAL & CSRF ==========
     const modal = document.getElementById('contactModal');
     const closeBtn = document.getElementById('closeModalBtn');
-    const csrfInput = document.getElementById('csrf_token');
-    
-    const fetchCsrfToken = async () => {
-        try {
-            const res = await fetch('contact.php?action=csrf_token');
-            const data = await res.json();
-            if (data.token) csrfInput.value = data.token;
-        } catch (e) {
-            console.error("CSRF token fetch failed");
-        }
-    };
 
     const openModal = () => { 
         modal.classList.add('active'); 
         document.body.style.overflow = 'hidden'; 
-        fetchCsrfToken(); 
     };
     
     const closeModal = () => {
@@ -176,10 +164,14 @@ document.addEventListener('DOMContentLoaded', () => {
         status.textContent = '';
         
         try {
+            const formData = new FormData(form);
+            const jsonBody = {};
+            formData.forEach((value, key) => jsonBody[key] = value);
+
             const r = await fetch(form.action, { 
                 method: 'POST', 
-                body: new FormData(form), 
-                headers: { 'Accept': 'application/json' } 
+                body: JSON.stringify(jsonBody), 
+                headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' } 
             });
             const result = await r.json();
             
@@ -191,7 +183,7 @@ document.addEventListener('DOMContentLoaded', () => {
             } else { 
                 status.textContent = result.message || 'Something went wrong.'; 
                 status.className = 'form-status error'; 
-                fetchCsrfToken(); // Refresh token on error
+
             }
         } catch (error) {
             status.textContent = 'Network error. Please try again later.'; 

@@ -238,8 +238,7 @@
             <button class="modal-close" id="closeModalBtn"><i class="fa-solid fa-xmark"></i></button>
             <h2>Get in Touch</h2>
             <p class="modal-desc">Send us a message and we'll get back to you shortly.</p>
-            <form id="contactForm" action="contact.php" method="POST">
-                <input type="hidden" name="csrf_token" id="csrf_token" value="">
+            <form id="contactForm" action="/api/contact" method="POST">
                 
                 <!-- Honeypot -->
                 <div class="field hp-field" aria-hidden="true" style="display: none; opacity: 0; position: absolute; top: -9999px; left: -9999px; z-index: -1;">
