@@ -30,7 +30,8 @@ const transporter = nodemailer.createTransport({
 // Contact form API endpoint
 app.post('/api/contact', async (req, res) => {
     try {
-        const { name, email, phone, subject, message } = req.body;
+        const { name, email, countryCode, phone, subject, message } = req.body;
+        const fullPhone = phone ? `${countryCode || ''} ${phone}`.trim() : 'N/A';
 
         // Basic validation
         if (!name || !email || !message) {
@@ -48,7 +49,7 @@ You have received a new message from your website contact form.
 
 Name: ${name}
 Email: ${email}
-Phone: ${phone || 'N/A'}
+Phone: ${fullPhone}
 Subject: ${subject || 'N/A'}
 
 Message:
@@ -58,7 +59,7 @@ ${message}
                 <h3>New Contact Form Submission</h3>
                 <p><strong>Name:</strong> ${name}</p>
                 <p><strong>Email:</strong> ${email}</p>
-                <p><strong>Phone:</strong> ${phone || 'N/A'}</p>
+                <p><strong>Phone:</strong> ${fullPhone}</p>
                 <p><strong>Subject:</strong> ${subject || 'N/A'}</p>
                 <br/>
                 <p><strong>Message:</strong></p>
