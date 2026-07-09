@@ -1,6 +1,6 @@
 document.addEventListener('DOMContentLoaded', () => {
 
-    // ========== 1. TEXT SPLIT ==========
+    // TEXT SPLIT
     document.querySelectorAll('.reveal-text').forEach(el => {
         const text = el.textContent.trim();
         el.innerHTML = text.split(/\s+/).map((w, i) =>
@@ -8,7 +8,7 @@ document.addEventListener('DOMContentLoaded', () => {
         ).join(' ');
     });
 
-    // ========== 2. PRELOADER ==========
+    // PRELOADER 
     const preloader = document.getElementById('preloader');
     setTimeout(() => {
         preloader.classList.add('hidden');
@@ -117,7 +117,13 @@ document.addEventListener('DOMContentLoaded', () => {
     
     document.querySelectorAll('.open-modal-btn').forEach(b => b.addEventListener('click', e => { e.preventDefault(); openModal(); }));
     closeBtn.addEventListener('click', closeModal);
-    modal.addEventListener('click', e => { if (e.target === modal) closeModal(); });
+    
+    let isMouseDownOnOverlay = false;
+    modal.addEventListener('mousedown', e => { isMouseDownOnOverlay = (e.target === modal); });
+    modal.addEventListener('mouseup', e => { 
+        if (isMouseDownOnOverlay && e.target === modal) closeModal(); 
+        isMouseDownOnOverlay = false;
+    });
     document.addEventListener('keydown', e => { if (e.key === 'Escape' && modal.classList.contains('active')) closeModal(); });
 
     // ========== 10. FORM VALIDATION & SUBMISSION ==========
@@ -140,7 +146,7 @@ document.addEventListener('DOMContentLoaded', () => {
             email.nextElementSibling.textContent = 'Enter a valid email address'; isValid = false;
         }
         
-        const phone = document.getElementById('phone');
+         const phone = document.getElementById('phone');
         const phoneRegex = /^\+?[\d\s\-()]{7,20}$/;
         if (!phone.value.trim()) { 
             phone.nextElementSibling.textContent = 'Phone is required'; isValid = false; 
@@ -155,6 +161,27 @@ document.addEventListener('DOMContentLoaded', () => {
         if (!message.value.trim()) { message.nextElementSibling.textContent = 'Message is required'; isValid = false; }
 
         return isValid;
+    };
+
+    // Toast Notification Function
+    const showToast = (message, type = 'success') => {
+        const container = document.getElementById('toastContainer');
+        const toast = document.createElement('div');
+        toast.className = `toast ${type}`;
+        
+        const icon = type === 'success' ? '<i class="fa-solid fa-circle-check" style="color:var(--gold);"></i>' : '<i class="fa-solid fa-circle-exclamation" style="color:#dc2626;"></i>';
+        toast.innerHTML = `${icon} <span>${message}</span>`;
+        
+        container.appendChild(toast);
+        
+        // Trigger animation
+        setTimeout(() => toast.classList.add('show'), 10);
+        
+        // Remove after 4 seconds
+        setTimeout(() => {
+            toast.classList.remove('show');
+            setTimeout(() => toast.remove(), 400);
+        }, 4000);
     };
 
     form.addEventListener('submit', async (e) => {
@@ -181,21 +208,87 @@ document.addEventListener('DOMContentLoaded', () => {
             const result = await r.json();
             
             if (result.success) { 
-                status.textContent = result.message || "Thank you! Your message has been sent successfully."; 
-                status.className = 'form-status success'; 
+                showToast(result.message || "Thank you! Your message has been sent successfully.", "success");
                 form.reset(); 
-                setTimeout(closeModal, 2500);
+                closeModal(); // Close modal immediately on success
             } else { 
-                status.textContent = result.message || 'Something went wrong.'; 
-                status.className = 'form-status error'; 
-
+                showToast(result.message || 'Something went wrong.', "error");
             }
         } catch (error) {
-            status.textContent = 'Network error. Please try again later.'; 
-            status.className = 'form-status error';
+            showToast('Network error. Please try again later.', "error");
         } finally {
             submitBtn.innerHTML = orig; 
             submitBtn.disabled = false;
         }
     });
+
+    // ========== 11. CUSTOM SELECT FOR COUNTRY CODE ==========
+    const customSelectWrapper = document.getElementById('customCountrySelect');
+    if (customSelectWrapper) {
+        const selectElement = customSelectWrapper.querySelector('select');
+        
+        // Create selected display div
+        const selectedDiv = document.createElement('div');
+        selectedDiv.setAttribute('class', 'select-selected');
+        selectedDiv.innerHTML = `<span>${selectElement.options[selectElement.selectedIndex].innerHTML}</span><i class="fa-solid fa-chevron-down"></i>`;
+        customSelectWrapper.appendChild(selectedDiv);
+        
+        // Create dropdown list div
+        const optionsDiv = document.createElement('div');
+        optionsDiv.setAttribute('class', 'select-items select-hide');
+        
+        // Populate options
+        for (let i = 0; i < selectElement.length; i++) {
+            const optionItem = document.createElement('div');
+            optionItem.innerHTML = selectElement.options[i].innerHTML;
+            if (i === selectElement.selectedIndex) {
+                optionItem.classList.add('same-as-selected');
+            }
+            
+            optionItem.addEventListener('click', function(e) {
+                // Update native select
+                selectElement.selectedIndex = i;
+                
+                // Update selected display
+                selectedDiv.querySelector('span').innerHTML = this.innerHTML;
+                
+                // Remove highlight from previous
+                const currentSelected = optionsDiv.querySelector('.same-as-selected');
+                if (currentSelected) currentSelected.classList.remove('same-as-selected');
+                
+                // Add highlight to current
+                this.classList.add('same-as-selected');
+                
+                // Close dropdown
+                selectedDiv.click();
+            });
+            optionsDiv.appendChild(optionItem);
+        }
+        customSelectWrapper.appendChild(optionsDiv);
+        
+        // Toggle dropdown on click
+        selectedDiv.addEventListener('click', function(e) {
+            e.stopPropagation();
+            closeAllSelect(this);
+            this.nextSibling.classList.toggle('select-hide');
+            this.classList.toggle('select-arrow-active');
+        });
+        
+        // Close when clicking outside
+        function closeAllSelect(elmnt) {
+            const items = document.querySelectorAll('.select-items');
+            const selected = document.querySelectorAll('.select-selected');
+            for (let i = 0; i < selected.length; i++) {
+                if (elmnt !== selected[i]) {
+                    selected[i].classList.remove('select-arrow-active');
+                }
+            }
+            for (let i = 0; i < items.length; i++) {
+                if (elmnt !== selected[i]) {
+                    items[i].classList.add('select-hide');
+                }
+            }
+        }
+        document.addEventListener('click', closeAllSelect);
+    }
 });
