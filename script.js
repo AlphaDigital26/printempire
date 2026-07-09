@@ -1,6 +1,6 @@
 document.addEventListener('DOMContentLoaded', () => {
 
-    // ========== 1. TEXT SPLIT ==========
+    // TEXT SPLIT
     document.querySelectorAll('.reveal-text').forEach(el => {
         const text = el.textContent.trim();
         el.innerHTML = text.split(/\s+/).map((w, i) =>
@@ -8,7 +8,7 @@ document.addEventListener('DOMContentLoaded', () => {
         ).join(' ');
     });
 
-    // ========== 2. PRELOADER ==========
+    // PRELOADER 
     const preloader = document.getElementById('preloader');
     setTimeout(() => {
         preloader.classList.add('hidden');
